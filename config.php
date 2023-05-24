@@ -10,7 +10,7 @@
 define("HOSTNAME", "localhost");
 define("USERNAME", "kenneth");
 define("PASSWORD", "123456");
-define("DATABASE", "theadb");
+define("DATABASE", "raqueldb");
 define("SSL_KEY", "AES-128-ECB");
 /*** PASSWORD HASH KEY ***/
 define('HASH_PASSWORD_KEY', "machinelearningpython");

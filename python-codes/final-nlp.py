@@ -25,4 +25,4 @@ real_model = joblib.load(this_dir + '/raquel-training.joblib')
 
 result = real_model.predict(text_x_word_vectors)
 
-print(result)
+print(result[0])
