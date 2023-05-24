@@ -16,36 +16,37 @@ $config = new \Smalot\PdfParser\Config(); // fixes the presentation of extra spa
 $config->setHorizontalOffset(''); // fixes the presentation of extra spaces issue
 $parser = new \Smalot\PdfParser\Parser([], $config); 
 
-// $db = new Database();
-// $helper = new Helper();
-// $connection = $db->connect();
-// $tokenChecker = new Token($connection);
-// $userid = $helper->cleanNumber($_POST['userId']);
-// $selectedYear = $helper->cleanNumber($_POST['selectedYear']);
-// $token = $_POST['token'];
-// $schoolYear = $_POST['selectedYear'];
+$db = new Database();
+$helper = new Helper();
+$connection = $db->connect();
+$tokenChecker = new Token($connection);
+$userid = $helper->cleanNumber($_POST['userId']);
+$selectedYear = $helper->cleanNumber($_POST['selectedYear']);
+$token = $_POST['token'];
+$section = $_POST['selectedSection'];
+$school = $_POST['selectedSchool'];
 
-// if ($tokenChecker->checkToken($userid, $token) === false) {
-//     $helper->response_now(null, null, [
-//         'status' => "failed",
-//     ]);
-// }
+if ($tokenChecker->checkToken($userid, $token) === false) {
+    $helper->response_now(null, null, [
+        'status' => "failed",
+    ]);
+}
 
 // move file
-// $code = rand(10000,99999);
-// $date_added = date("YmdHis");
-// $fileExtension =  pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
-// $newFileName = $code. '-' . $schoolYear . '-' . $date_added. '-' . 'basefile.';
-// $filePath = $_SERVER['DOCUMENT_ROOT'] . '/upload/' . $newFileName . $fileExtension;
-// if (!move_uploaded_file($_FILES["file"]["tmp_name"], $filePath)) {
-//     $helper->response_now(null, null, [
-//         'status' => "failed_moving_file",
-//     ]);
-// }
-// $newFileName = $newFileName . $fileExtension;
+$code = rand(10000,99999);
+$date_added = date("YmdHis");
+$fileExtension =  pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
+$newFileName = $code. '-' . $selectedYear . '-' . $date_added. '-' . 'basefile.';
+$filePath = $_SERVER['DOCUMENT_ROOT'] . '/file-uploads/' . $newFileName . $fileExtension;
+if (!move_uploaded_file($_FILES["file"]["tmp_name"], $filePath)) {
+    $helper->response_now(null, null, [
+        'status' => "failed_moving_file",
+    ]);
+}
+$newFileName = $newFileName . $fileExtension;
  
 // Source PDF file to extract text 
-$file = $_SERVER['DOCUMENT_ROOT'] . '/file-uploads/' . "Capsule-proposal-soc-stud.docx.pdf";
+$file = $_SERVER['DOCUMENT_ROOT'] . '/file-uploads/' . $newFileName;
 
 // Parse pdf file using Parser library 
 $pdf = $parser->parseFile($file); 
@@ -61,16 +62,41 @@ function clean($string) {
 if (strpos($textContent, "Rationale") !== false) {
     $rationaleLimit =  4500;
     $startOfRationale = strpos($textContent, "Rationale") + 55;
-    $textContent = (substr($textContent, $startOfRationale, strpos($textContent, "Objectives:") - $startOfRationale));
+    $textContent = (substr($textContent, $startOfRationale, $rationaleLimit));
     $textContent = clean($textContent);
     // start python here
-     $command_exec = 'python ../python-codes/final-nlp.py ' . escapeshellarg(json_encode($textContent));
-    $result = shell_exec($command_exec);
-    echo $result;
+     $command_exec = 'python ../python-codes/final-nlp.py ' . json_encode($textContent);
+     $result = shell_exec($command_exec);
+    if (!isset($result)) {
+        $helper->response_now(null, null,[
+            'status' => "bad_data",
+        ]);
+    } else {
+        $command = 'INSERT INTO results(year_id, school_id, section_id, base_file, category) VALUES (?, ?, ?, ?, ?)';
+        $statement = $connection->prepare($command);
+        $statement->bind_param('iiiss',
+            $selectedYear,
+            $school,
+            $section,
+            $newFileName,
+            $result
+        );
+        $statement->execute();
+         // PROMPT FOR FAILED QUERY
+        if ($statement->affected_rows !== 1) {
+            $helper->response_now($statement, $connection,[
+                'status' => "failed",
+            ]);
+        }
+    }
 } else {
     $helper->response_now(null, null, [
         'status' => "rationale_not_found",
     ]);
 }
+
+$helper->response_now($statement, $connection, [
+    'status' => "success",
+]);
 
 ?>
