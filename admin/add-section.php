@@ -18,6 +18,7 @@
 
     $userid = $helper->cleanNumber($_POST['userId']);
     $sectionName = $helper->cleanString($_POST['section']);
+    $schoolId = $helper->cleanNumber($_POST['schoolId']);
     $token = $_POST['token'];
 
     if ($tokenChecker->checkToken($userid, $token) === false) {
@@ -26,10 +27,11 @@
         ]);
     }
 
-    $command = 'INSERT INTO sections(section_name) VALUES (?)';
+    $command = 'INSERT INTO sections(section_name, school_id) VALUES (?, ?)';
     $statement = $connection->prepare($command);
-    $statement->bind_param('s',
+    $statement->bind_param('si',
         $sectionName,
+        $schoolId
     );
     $statement->execute();
     // PROMPT FOR FAILED QUERY
