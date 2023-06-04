@@ -22,6 +22,7 @@ $connection = $db->connect();
 $tokenChecker = new Token($connection);
 $userid = $helper->cleanNumber($_POST['userId']);
 $selectedYear = $helper->cleanNumber($_POST['selectedYear']);
+$researchTitle = $helper->cleanString($_POST['researchTitle']);
 $token = $_POST['token'];
 $section = $_POST['selectedSection'];
 $school = $_POST['selectedSchool'];
@@ -72,14 +73,15 @@ if (strpos($textContent, "Rationale") !== false) {
             'status' => "bad_data",
         ]);
     } else {
-        $command = 'INSERT INTO results(year_id, school_id, section_id, base_file, category) VALUES (?, ?, ?, ?, ?)';
+        $command = 'INSERT INTO results(year_id, school_id, section_id, base_file, category, title) VALUES (?, ?, ?, ?, ?, ?)';
         $statement = $connection->prepare($command);
-        $statement->bind_param('iiiss',
+        $statement->bind_param('iiisss',
             $selectedYear,
             $school,
             $section,
             $newFileName,
-            $result
+            $result,
+            $researchTitle
         );
         $statement->execute();
          // PROMPT FOR FAILED QUERY
