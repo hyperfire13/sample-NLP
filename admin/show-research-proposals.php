@@ -23,7 +23,7 @@
     $selectedSchool = $helper->cleanNumber($_POST['selectedSchool']);
     $condition = ($selectedSchool == '0') ? " IS NOT NULL" : ' = ' . $selectedSchool;
     $token = $_POST['token'];
-    $results = [['TITLE', 'SCHOOL', 'SECTION', 'CATEGORY']];
+    $results = [];
 
     if ($tokenChecker->checkToken($userid, $token) === false) {
         $helper->response_now(null, null, [
@@ -48,18 +48,23 @@
     $statement->execute();
     while($statement->fetch()) {
         $results[] = [
+            'id' => $id,
             'title' => $title,
+            'yearId' => $yearId,
+            'schoolId' => $schoolId,
+            'sectionId' => $sectionId,
             'schoolName' => $schoolName,
             'sectionName' => $sectionName,
             'category' => trim($category),
         ];
     }
-    
-    $existingRecord = array_values($results); // 'reindex' array
-    $output = fopen('php://output', 'w');
-    foreach ($existingRecord as $line) {
-        fputcsv($output, $line);
+    $categoryArray = [];
+    for ($i=0; $i < sizeof($results); $i++) { 
+        $categoryArray[] =  $results[$i]['category'];
     }
-    
+    $categoryArray = array_count_values($categoryArray);
+    $helper->response_now($statement, $connection, [
+        'status' => "success",
+        'result' => $results
+    ]);
 ?>
-
