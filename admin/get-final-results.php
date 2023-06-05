@@ -55,12 +55,22 @@
             'sectionId' => $sectionId,
             'schoolName' => $schoolName,
             'sectionName' => $sectionName,
-            'category' => $category,
+            'category' => trim($category),
         ];
     }
-    die(json_encode($results));
+    $categoryArray = [];
+    for ($i=0; $i < sizeof($results); $i++) { 
+        $categoryArray[] =  $results[$i]['category'];
+    }
+    $categoryArray = array_count_values($categoryArray);
     $helper->response_now($statement, $connection, [
         'status' => "success",
-        'id' => $id,
+        'result' => [
+            'anibdampi' => !isset($categoryArray['ANIB-DAMPI']) ? 0 : $categoryArray['ANIB-DAMPI'],
+            'balat' => !isset($categoryArray['BALAT']) ? 0 : $categoryArray['BALAT'],
+            'yaman' => !isset($categoryArray['YAMAN']) ? 0 : $categoryArray['YAMAN'],
+            'ugnay' => !isset($categoryArray['UGNAY']) ? 0 : $categoryArray['UGNAY'],
+            'kagyat' => !isset($categoryArray['KAGYAT']) ? 0 : $categoryArray['BALAT'],
+        ]
     ]);
 ?>
