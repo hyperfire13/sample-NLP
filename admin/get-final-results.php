@@ -70,7 +70,7 @@
             'balat' => !isset($categoryArray['BALAT']) ? 0 : $categoryArray['BALAT'],
             'yaman' => !isset($categoryArray['YAMAN']) ? 0 : $categoryArray['YAMAN'],
             'ugnay' => !isset($categoryArray['UGNAY']) ? 0 : $categoryArray['UGNAY'],
-            'kagyat' => !isset($categoryArray['KAGYAT']) ? 0 : $categoryArray['BALAT'],
+            'kagyat' => !isset($categoryArray['KAGYAT']) ? 0 : $categoryArray['KAGYAT'],
         ]
     ]);
 ?>
