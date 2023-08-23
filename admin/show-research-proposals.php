@@ -30,7 +30,7 @@
             'status' => "failed",
         ]);
     }
-    $command = 'SELECT results.id, title, results.year_id, results.school_id, results.section_id, schools.school_name, sections.section_name, results.category  FROM results LEFT JOIN schools ON results.school_id = schools.id LEFT JOIN sections ON results.section_id = sections.id WHERE results.deleted_at IS NULL AND results.year_id = ? AND results.school_id '. " " . $condition;
+    $command = 'SELECT results.id, title, results.year_id, results.school_id, results.section_id, schools.school_name, sections.section_name, results.category, results.approval_date  FROM results LEFT JOIN schools ON results.school_id = schools.id LEFT JOIN sections ON results.section_id = sections.id WHERE results.deleted_at IS NULL AND results.year_id = ? AND results.school_id '. " " . $condition;
     $statement = $connection->prepare($command);
     $statement->bind_param('i',
         $selectedYear,
@@ -43,7 +43,8 @@
         $sectionId,
         $schoolName,
         $sectionName,
-        $category
+        $category,
+        $approvalDate
     );
     $statement->execute();
     while($statement->fetch()) {
@@ -56,6 +57,7 @@
             'schoolName' => $schoolName,
             'sectionName' => $sectionName,
             'category' => trim($category),
+            'approvalDate' => $approvalDate
         ];
     }
     $categoryArray = [];
