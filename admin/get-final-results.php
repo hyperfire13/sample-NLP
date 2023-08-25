@@ -30,7 +30,7 @@
             'status' => "failed",
         ]);
     }
-    $command = 'SELECT results.id, title, results.year_id, results.school_id, results.section_id, schools.school_name, sections.section_name, results.category  FROM results LEFT JOIN schools ON results.school_id = schools.id LEFT JOIN sections ON results.section_id = sections.id WHERE results.deleted_at IS NULL AND results.year_id = ? AND results.school_id '. " " . $condition;
+    $command = 'SELECT results.id, title, results.year_id, results.school_id, results.section_id, schools.school_name, sections.section_name, results.category, results.approval_date  FROM results LEFT JOIN schools ON results.school_id = schools.id LEFT JOIN sections ON results.section_id = sections.id WHERE results.deleted_at IS NULL AND results.year_id = ? AND results.school_id '. " " . $condition;
     $statement = $connection->prepare($command);
     $statement->bind_param('i',
         $selectedYear,
@@ -43,7 +43,8 @@
         $sectionId,
         $schoolName,
         $sectionName,
-        $category
+        $category,
+        $approval_date
     );
     $statement->execute();
     while($statement->fetch()) {
@@ -56,11 +57,20 @@
             'schoolName' => $schoolName,
             'sectionName' => $sectionName,
             'category' => trim($category),
+            'approval_date' => $approval_date
         ];
     }
     $categoryArray = [];
+    $hasApprovalDate = 0;
+    $noApprovalDate = 0;
     for ($i=0; $i < sizeof($results); $i++) { 
         $categoryArray[] =  $results[$i]['category'];
+        if (!isset($results[$i]['approval_date'])) {
+            $noApprovalDate++;
+        } else {
+            $hasApprovalDate++;
+        }
+
     }
     $categoryArray = array_count_values($categoryArray);
     $helper->response_now($statement, $connection, [
@@ -71,6 +81,8 @@
             'yaman' => !isset($categoryArray['YAMAN']) ? 0 : $categoryArray['YAMAN'],
             'ugnay' => !isset($categoryArray['UGNAY']) ? 0 : $categoryArray['UGNAY'],
             'kagyat' => !isset($categoryArray['KAGYAT']) ? 0 : $categoryArray['KAGYAT'],
+            'hasApprovalDate' => $hasApprovalDate,
+            'noApprovalDate' => $noApprovalDate,
         ]
     ]);
 ?>
